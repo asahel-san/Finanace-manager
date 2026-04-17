@@ -1,15 +1,14 @@
 #include "FinanceManager.h"
-#include <utility> // for std::swap
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <algorithm>
+using namespace std;
 
-FinanceManager::FinanceManager() : head(nullptr) {
-     addTransaction("Salary", 3000, true);
-     addTransaction("Groceries", 200, false);
-     addTransaction("Freelance", 1500, true);
-     addTransaction("Entertainment", 100, false);
-  }
+FinanceManager::FinanceManager() : head(nullptr) {}
 
 void FinanceManager::addTransaction(const string& category, double amount, bool isIncome) {
-    Transaction* newTransaction = new Transaction{category, amount, isIncome, head};
+    Transaction* newTransaction = new Transaction(category, amount, isIncome, head);
     head = newTransaction;
 }
 
@@ -17,54 +16,51 @@ void FinanceManager::viewTransactions() {
     Transaction* current = head;
     cout << fixed << setprecision(2);
     while (current) {
-         cout << (current->isIncome ? "Income: " : "Expense: ") 
-             << current->category << " - $" << current->amount << endl;
-        current = current->next;
-
-     }
- }
-
- void FinanceManager::calculateTotals(double& totalIncome, double& totalExpenses) {
-    Transaction* current = head;
-    while (current) {
-        if (current->isIncome) {
-         totalIncome += current->amount;
-        } else {
-        totalExpenses += current->amount;
-        }
+        cout << (current->isIncome ? "Income: " : "Expense: ");
+        cout << current->category << " - $" << current->amount << endl;
         current = current->next;
     }
- }
+}
 
- double FinanceManager::getCurrentBalance() {
-     double totalIncome = 0, totalExpenses = 0;
-     calculateTotals(totalIncome, totalExpenses);
-    return totalIncome - totalExpenses;
+double FinanceManager::getTotalIncome() {
+    double total = 0;
+    Transaction* current = head;
+    while (current) {
+        if (current->isIncome) total += current->amount;
+        current = current->next;
+    }
+    return total;
+}
+
+double FinanceManager::getTotalExpenses() {
+    double total = 0;
+    Transaction* current = head;
+    while (current) {
+        if (!current->isIncome) total += current->amount;
+        current = current->next;
+    }
+    return total;
+}
+
+double FinanceManager::getBalance() {
+    return getTotalIncome() - getTotalExpenses();
 }
 
 void FinanceManager::sortTransactions() {
-    if (!head || !head->next) return;
+                                                                                                                                
+    vector<Transaction*> list;
+    Transaction* current = head;
+    while (current) {
+         list.push_back(current);
+        current = current->next;
+    }
 
-    bool swapped;
-    while {
-        swapped = false;
-        Transaction* current = head;
-        while (current->next) {
-            if (current->amount > current->next->amount){
-                swap(current->amount, current->next->amount);
-                swap(current->category, current->next->category);
-                swap(current->isIncome, current->next->isIncome);
-                swapped = true;
-            }
-            current = current->next;
+    sort(list.begin(), list.end(), [](Transaction* a, Transaction* b) {
+        return a->amount < b->amount;
+    });
+
+    for (auto* t : list) {
+        cout << (t->isIncome ? "Income: " : "Expense: ");
+        cout << t->category << " - $" << t->amount << endl;
         }
-     } while (swapped);
-}
-
-FinanceManager::~FinanceManager() {
-    while (head) {
-    Transaction* temp = head;
-    head = head->next;
-     delete temp;
-     }
-}
+    }
